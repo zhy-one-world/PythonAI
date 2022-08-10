@@ -2,6 +2,16 @@
   4.27.1  
 # VS版本  
 VS2019 + update3  
+工作负荷  
+.Net桌面开发  
+使用C++的桌面开发  
+使用C++的游戏开发  
+单个组件  
+.Net Framework 4.5 目标包  
+.Net Framework 4.5.1 目标包  
+.Net Framework 4.6.2 目标包  
+Windows 10 SDK(10.0.18362.0)  
+.Net Framework 4.6.2 SDK  
 # UE4使用  
   下载UE4源码，选择4.27.1版本。下载地址：https://github.com/EpicGames/UnrealEngine.git  
   下载成功后点击 GenerateProjectFiles.bat 下载辅助性dll  
