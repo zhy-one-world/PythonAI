@@ -21,4 +21,4 @@ Windows 10 SDK(10.0.18362.0)
 # 项目使用  
   右键点击 PythonAI\PythonAI.uproject,点击 Switch Unreal Version，在弹出窗口中选择下载好UE4的路径，点击OK，生成PythonAI.sln  
   编译，运行PythonAI.sln  
-  在编辑器窗口选择运行，就可以体验demo版本了  
+  在编辑器窗口选择运行，就可以体验demo版本了哈
