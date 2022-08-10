@@ -67,10 +67,13 @@
 2. 也可以在工程的 例:PythonAI工程名  PythonAI\Intermediate\PythonStub\unreal.py查询相关的api函数,该文件中主要存放着UE封闭过的API
 3. 具体用法， 一般使用 类名.函数( 对象 )的方式去调用，例如果获取角色的当前位置可以使用以下代码
 ```python
-  import unreal
-  world = unreal.EditorLevelLibrary.get_game_world()
-  character = unreal.GamePlayStatic.get_player_pawn(world,0)
-  position = character.get_actor_location()
+  import unreal                                           #引入unreal的库
+  world = unreal.EditorLevelLibrary.get_game_world()      
+  # unreal.EditorLevelLibrary是调用unreal的EditorLevelLibrary类  get_game_world()是该库中的集成的方法，该方法在unreal的文件中已定义，可以去unreal.py中搜索得到，也可以通过API中搜索得到，返回值是当前【世界】的对象，该方法是在Edtiro模式下运行的，Runtime要使用其它方法。
+  pawn = unreal.GamePlayStatic.get_player_pawn(world,0)
+  #  该方法中把world对象，当做参数，传入到了get_player_pawn中 该方法返回一个pawn(操作对象)
+  position = pawn.get_actor_location()
+  # 使用刚才的操作对象,去Pawn中查找相关的方法 也可以从引擎的C++层，查询APawn的方法得到 GetActorLoction()与get_actor_location()相同，只是在c++使用 大写函数名称 在python中使用 _小写的方式，当然，也需要看unreal文件是否支持该函数。
   print(position)
 ```
 4. 带Editor的类或者名称，一般是编辑器模式下，带Engine一般指运行时模式下，暂时，都可以混用，等以后熟悉后，将会模式隔离。

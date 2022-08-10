@@ -18,6 +18,8 @@ Tensor = FloatTensor
 
 from Env import GameEnv, ObsType, ActionType
 
+#print("Agent1222")
+
 class AgentBase:
     def __init__(self, env: GameEnv) -> None:
         self.env = env

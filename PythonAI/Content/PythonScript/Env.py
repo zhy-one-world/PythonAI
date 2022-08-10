@@ -10,7 +10,6 @@ ActionType = List
 ObsType = List
 
 class GameEnv:
-
     def __init__(self, n_ray: int) -> None:
         """
         初始化游戏环境
@@ -105,12 +104,12 @@ class GameEnv:
         info = None
         return next_observation, reward, done, info
 
-    def render(self) -> None:
+    def render(self):
         """
         游戏画面渲染一步, 如果在main.py中不执行该函数，那么就不会渲染游戏画面
         :return: 无返回值
         """
-        pass
+        print("GameEnv render")
 
     def close(self) -> None:
         """
