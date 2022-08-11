@@ -109,7 +109,8 @@ class GameEnv:
         游戏画面渲染一步, 如果在main.py中不执行该函数，那么就不会渲染游戏画面
         :return: 无返回值
         """
-        print("GameEnv render")
+        pass
+        #print("GameEnv render")
 
     def close(self) -> None:
         """

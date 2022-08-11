@@ -5,9 +5,12 @@ import numpy
 import torch
 import random
 import main
-import GameMain
+import CharacterManager
+import CharacterAction
+import Character
 import Env
 import Agent
 import ControlledTest
 import Test1
 import Test2
+import GameMain
