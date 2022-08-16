@@ -8,6 +8,12 @@ class CharacterManager:
         print("PCharacterManager init!!")
     def get_all_character():
         print("get_all_character")
+    # def add_character( character ):
+    #     character_map[character.id] = character
+    # def tick( delta ):
+    #     for index in range( len(CharacterManager.character_map) ):
+    #         CharacterManager.character_map[index].tick( delta )
+
 
 def get_self_character():
     print("get_self_character")

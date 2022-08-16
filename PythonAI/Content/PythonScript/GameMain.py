@@ -18,15 +18,16 @@ class GameMain:
     def uecall_tick( delta ):     
         if CharacterManager.CharacterManager.self_character is None:
             return
+        CharacterManager.CharacterManager.self_character.tick(delta)
 
-        GameMain.uecall_delta = GameMain.uecall_delta + float(delta)
-        if GameMain.uecall_delta > GameMain.uecall_targettime:
-            print("tick", GameMain.uecall_delta )
-            GameMain.uecall_delta = GameMain.uecall_delta - GameMain.uecall_targettime
-            randomval = CharacterAction.CreateRandomAction()
-            GameMain.uecall_targettime = randomval[2]
-        else:
-            CharacterManager.CharacterManager.self_character.tick(delta)
+        #GameMain.uecall_delta = GameMain.uecall_delta + float(delta)
+        #if GameMain.uecall_delta > GameMain.uecall_targettime:
+        #    print("tick", GameMain.uecall_delta )
+        #    GameMain.uecall_delta = GameMain.uecall_delta - GameMain.uecall_targettime
+            #randomval = CharacterAction.CreateRandomAction()
+            #GameMain.uecall_targettime = randomval[2]
+        #else:
+        #    CharacterManager.CharacterManager.self_character.tick(delta)
 
     def test1():
         print("test1")
@@ -66,7 +67,15 @@ class GameMain:
                 observation = next_observation
             #print(f"episode: {i}, reward: {episode_reward}")
         game_env.close()
-        print("run GameMain.main")    
+        print("run GameMain.main")
+
+    def game_end():
+        print("game_end")
+        #处理获取最终奖励逻辑
+        world = unreal.EditorLevelLibrary.get_game_world()
+        #game_mode = world.get_auth_game_mode()
+        CharacterManager.CharacterManager.self_character.im_move_position()#重新开始
+
 
 GameMain.main()
 print("loaded GameMain")
