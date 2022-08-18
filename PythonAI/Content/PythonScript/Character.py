@@ -1,5 +1,6 @@
 import unreal
 import CharacterAction
+import SamplingPicture
 
 class Character:
     ue_character = None
@@ -39,6 +40,8 @@ class Character:
     def look_right(self):
         self.ue_character.add_controller_yaw_input(0.6)
     def tick(self, delta):
+        RangeSize = unreal.Vector2D(800,600)
+        SamplingPicture.picture_sampling(RangeSize,delta,2)
         if( self.action_state == 0 ):
             self.character_action.CreateRandomAction()
             self.action_state = 1
