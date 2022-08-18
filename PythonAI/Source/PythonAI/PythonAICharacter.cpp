@@ -5,6 +5,15 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "Engine/TextureRenderTarget2D.h"
+#include "Engine/World.h"
+#include "TimerManager.h"
+#include "Modules/ModuleManager.h"
+#include "IImageWrapperModule.h"
+#include "IImageWrapper.h"
+#include "Misc/FileHelper.h"
+#include "ImageUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -43,6 +52,13 @@ APythonAICharacter::APythonAICharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	CaptureComponent2D = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("Capture"));
+	if (FollowCamera && CaptureComponent2D)
+	{
+		CaptureComponent2D->SetupAttachment(FollowCamera);
+	}
+	
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -74,6 +90,49 @@ void APythonAICharacter::SetupPlayerInputComponent(class UInputComponent* Player
 
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &APythonAICharacter::OnResetVR);
+}
+
+
+TArray<FColor> APythonAICharacter::PictureSampling(const FVector2D& RangeSize, const float& DeltaSeconds, const float& SamplingFrequency)
+{
+	if (DeltaSeconds > (1 / SamplingFrequency))
+	{
+		ColorDateArr.Empty();
+		return ColorDateArr;
+	}
+	if (CaptureComponent2D && CaptureComponent2D->TextureTarget)
+	{
+		CaptureComponent2D->TextureTarget->InitAutoFormat(RangeSize.X, RangeSize.Y);
+		CaptureComponent2D->UpdateContent();
+		auto Lab = [=]()
+		{
+			FTextureRenderTargetResource* RenderResource = CaptureComponent2D->TextureTarget->GameThread_GetRenderTargetResource();
+			if (RenderResource)
+			{
+				Time += DeltaSeconds;
+				if (Time > (1/ SamplingFrequency))
+				{
+					RenderResource->ReadPixels(ColorDateArr);
+					UE_LOG(LogTemp, Warning, TEXT("%s"), *(ColorDateArr[10000].ToString()));
+					UE_LOG(LogTemp, Warning, TEXT(" PictureSampling DeltaSeconds = %f"), Time);
+					Time = 0;
+					return ColorDateArr;
+				}
+			}
+			ColorDateArr.Empty();
+			return ColorDateArr;
+		};
+		FTimerHandle TimerHandle;
+		MyWorld = GetWorld();
+		if (MyWorld)
+		{
+			MyWorld->GetTimerManager().SetTimer(TimerHandle, Lab, 0.001f, false, 0);
+		}
+		ColorDateArr.Empty();
+		return ColorDateArr;
+	}
+	ColorDateArr.Empty();
+	return ColorDateArr;
 }
 
 

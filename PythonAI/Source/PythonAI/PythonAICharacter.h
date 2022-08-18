@@ -18,6 +18,9 @@ class APythonAICharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Capture, meta = (AllowPrivateAccess = "true"))
+		class USceneCaptureComponent2D* CaptureComponent2D;
 public:
 	APythonAICharacter();
 
@@ -64,6 +67,12 @@ protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
+
+	UFUNCTION(BlueprintCallable)
+		TArray<FColor> PictureSampling(const FVector2D& RangeSize, const float& DeltaSeconds, const float& SamplingFrequency);
+	TArray<FColor> ColorDateArr;
+	UWorld* MyWorld = nullptr;
+	float Time = 0;
 
 public:
 	/** Returns CameraBoom subobject **/

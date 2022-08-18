@@ -15,7 +15,7 @@ import random
 class GameMain:
     uecall_delta = 0
     uecall_targettime = 0
-    def uecall_tick( delta ):     
+    def uecall_tick(delta):     
         if CharacterManager.CharacterManager.self_character is None:
             return
         CharacterManager.CharacterManager.self_character.tick(delta)
