@@ -117,6 +117,7 @@ void APythonAICharacter::Tick(float DeltaTime)
 	{
 		PictureSampling(FVector2D(Resolution.X, Resolution.Y));
 		GetColorDate(ColorDateArr);
+
 		//调用蓝图python通知截取成功了
 		Time = 0;
 	}
@@ -134,6 +135,7 @@ int* APythonAICharacter::GetColorDate(const TArray<FColor>& ColorArr)
 			image[j+3] = ColorArr[i].A;
 		}
 	}
+//	UE_LOG(LogTemp, Warning, TEXT("%s"), TEXT("aa") );
 	return image;
 }
 

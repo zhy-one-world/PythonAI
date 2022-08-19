@@ -44,6 +44,8 @@ class Character:
         color_date = SamplingPicture.get_color_date_arr()
         if(len(color_date) == 0):
             return
+        #color_date这样用，没有做格式化
+        #print(color_date[1].b)
         if( self.action_state == 0 ):
             self.character_action.CreateRandomAction()
             self.action_state = 1

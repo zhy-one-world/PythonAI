@@ -89,6 +89,10 @@ protected:
 	UWorld* MyWorld = nullptr;
 	float Time = 0;
 	FIntPoint Resolution;
+
+	UPROPERTY(BlueprintReadWrite)
+		UObject* AAA;
+
 	static int* image;
 
 public:
