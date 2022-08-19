@@ -38,8 +38,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
-	UFUNCTION(BlueprintCallable)
-	int* GetColorDate(const TArray<FColor>& ColorArr);
+//	UFUNCTION(BlueprintCallable)
+//	int* GetColorDate(const TArray<FColor>& ColorArr);
 
 protected:
 

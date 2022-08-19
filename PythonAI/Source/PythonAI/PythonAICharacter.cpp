@@ -70,7 +70,7 @@ APythonAICharacter::APythonAICharacter()
 		}
 	}
 	
-	int FColorDateArr[4 * (Resolution.X) * (Resolution.Y)];
+//	int FColorDateArr[4 * (Resolution.X) * (Resolution.Y)];
 //	4 * (Resolution.X) * (Resolution.Y) Resolution为分辨率信息
 
 
@@ -118,7 +118,7 @@ void APythonAICharacter::Tick(float DeltaTime)
 	}
 }
 
-int* APythonAICharacter::GetColorDate(const TArray<FColor>& ColorArr)
+/*int* APythonAICharacter::GetColorDate(const TArray<FColor>& ColorArr)
 {
 	for (int32 i = 0; i < ColorArr.Num(); i++)
 	{
@@ -132,6 +132,7 @@ int* APythonAICharacter::GetColorDate(const TArray<FColor>& ColorArr)
 	}
 	return FColorDateArr;
 }
+*/
 
 TArray<FColor> APythonAICharacter::PictureSampling(const FVector2D& RangeSize)
 {
