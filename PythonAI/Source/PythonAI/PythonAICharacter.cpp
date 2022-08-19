@@ -64,12 +64,14 @@ APythonAICharacter::APythonAICharacter()
 	if (GEngine)
 	{
 		UserSetting = GEngine->GetGameUserSettings();
+		if (UserSetting)
+		{
+			Resolution = UserSetting->GetScreenResolution();
+		}
 	}
 	
-	if (UserSetting)
-	{
-		Resolution = UserSetting->GetScreenResolution();
-	}
+	int FColorDateArr[4 * (Resolution.X) * (Resolution.Y)];
+//	4 * (Resolution.X) * (Resolution.Y) Resolution为分辨率信息
 
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
@@ -114,6 +116,21 @@ void APythonAICharacter::Tick(float DeltaTime)
 		PictureSampling(FVector2D(Resolution.X, Resolution.Y));
 		Time = 0;
 	}
+}
+
+int* APythonAICharacter::GetColorDate(const TArray<FColor>& ColorArr)
+{
+	for (int32 i = 0; i < ColorArr.Num(); i++)
+	{
+		for (int32 j = 4 * i; j < 4 * (i + 1); j++)
+		{
+			FColorDateArr[j] = ColorArr[i].B;
+			FColorDateArr[j+1] = ColorArr[i].G;
+			FColorDateArr[j+2] = ColorArr[i].R;
+			FColorDateArr[j+3] = ColorArr[i].A;
+		}
+	}
+	return FColorDateArr;
 }
 
 TArray<FColor> APythonAICharacter::PictureSampling(const FVector2D& RangeSize)

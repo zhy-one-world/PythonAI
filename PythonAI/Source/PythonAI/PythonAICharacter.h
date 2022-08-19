@@ -38,6 +38,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
+	UFUNCTION(BlueprintCallable)
+	int* GetColorDate(const TArray<FColor>& ColorArr);
+
 protected:
 
 	/** Resets HMD orientation in VR. */
@@ -68,6 +71,8 @@ protected:
 
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
+
+//	int FColorDateArr[2073600 * 4];
 
 protected:
 	// APawn interface
