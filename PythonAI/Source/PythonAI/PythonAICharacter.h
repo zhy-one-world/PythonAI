@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/GameUserSettings.h"
 #include "PythonAICharacter.generated.h"
 
 UCLASS(config=Game)
@@ -22,7 +23,12 @@ class APythonAICharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Capture, meta = (AllowPrivateAccess = "true"))
 		class USceneCaptureComponent2D* CaptureComponent2D;
 public:
+
+	// Called every frame
+	
 	APythonAICharacter();
+
+	virtual void Tick(float DeltaTime) override;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
@@ -69,10 +75,16 @@ protected:
 	// End of APawn interface
 
 	UFUNCTION(BlueprintCallable)
-		TArray<FColor> PictureSampling(const FVector2D& RangeSize, const float& DeltaSeconds, const float& SamplingFrequency);
+		TArray<FColor> PictureSampling(const FVector2D& RangeSize);
+	UPROPERTY(BlueprintReadWrite)
 	TArray<FColor> ColorDateArr;
+//	UGameUserSettings Settings;
+
+	UGameUserSettings* UserSetting = nullptr;
+
 	UWorld* MyWorld = nullptr;
 	float Time = 0;
+	FIntPoint Resolution;
 
 public:
 	/** Returns CameraBoom subobject **/

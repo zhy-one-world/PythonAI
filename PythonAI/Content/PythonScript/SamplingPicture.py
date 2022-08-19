@@ -1,6 +1,6 @@
 import unreal
 import CharacterManager
-def picture_sampling(RangeSize,DeltaSeconds,SamplingFrequency):
-      CharacterManager.CharacterManager.self_character.ue_character.picture_sampling(RangeSize,DeltaSeconds,SamplingFrequency)
+def get_color_date_arr():
+      return CharacterManager.CharacterManager.self_character.ue_character.color_date_arr
 print("Load SamplingPictureSuccess")      
       

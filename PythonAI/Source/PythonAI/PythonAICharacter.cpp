@@ -26,6 +26,8 @@ APythonAICharacter::APythonAICharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
+	PrimaryActorTick.bCanEverTick = true;
+
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
@@ -58,6 +60,17 @@ APythonAICharacter::APythonAICharacter()
 		CaptureComponent2D->SetupAttachment(FollowCamera);
 	}
 	
+
+	if (GEngine)
+	{
+		UserSetting = GEngine->GetGameUserSettings();
+	}
+	
+	if (UserSetting)
+	{
+		Resolution = UserSetting->GetScreenResolution();
+	}
+
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
@@ -92,14 +105,19 @@ void APythonAICharacter::SetupPlayerInputComponent(class UInputComponent* Player
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &APythonAICharacter::OnResetVR);
 }
 
-
-TArray<FColor> APythonAICharacter::PictureSampling(const FVector2D& RangeSize, const float& DeltaSeconds, const float& SamplingFrequency)
+void APythonAICharacter::Tick(float DeltaTime)
 {
-	if (DeltaSeconds > (1 / SamplingFrequency))
+	Super::Tick(DeltaTime);
+	Time += DeltaTime;
+	if (Time > DeltaTime)
 	{
-		ColorDateArr.Empty();
-		return ColorDateArr;
+		PictureSampling(FVector2D(Resolution.X, Resolution.Y));
+		Time = 0;
 	}
+}
+
+TArray<FColor> APythonAICharacter::PictureSampling(const FVector2D& RangeSize)
+{
 	if (CaptureComponent2D && CaptureComponent2D->TextureTarget)
 	{
 		CaptureComponent2D->TextureTarget->InitAutoFormat(RangeSize.X, RangeSize.Y);
@@ -109,15 +127,9 @@ TArray<FColor> APythonAICharacter::PictureSampling(const FVector2D& RangeSize, c
 			FTextureRenderTargetResource* RenderResource = CaptureComponent2D->TextureTarget->GameThread_GetRenderTargetResource();
 			if (RenderResource)
 			{
-				Time += DeltaSeconds;
-				if (Time > (1/ SamplingFrequency))
-				{
 					RenderResource->ReadPixels(ColorDateArr);
-					UE_LOG(LogTemp, Warning, TEXT("%s"), *(ColorDateArr[10000].ToString()));
-					UE_LOG(LogTemp, Warning, TEXT(" PictureSampling DeltaSeconds = %f"), Time);
-					Time = 0;
+//					UE_LOG(LogTemp, Warning, TEXT("%s"), *(ColorDateArr[10000].ToString()));
 					return ColorDateArr;
-				}
 			}
 			ColorDateArr.Empty();
 			return ColorDateArr;
@@ -128,7 +140,6 @@ TArray<FColor> APythonAICharacter::PictureSampling(const FVector2D& RangeSize, c
 		{
 			MyWorld->GetTimerManager().SetTimer(TimerHandle, Lab, 0.001f, false, 0);
 		}
-		ColorDateArr.Empty();
 		return ColorDateArr;
 	}
 	ColorDateArr.Empty();

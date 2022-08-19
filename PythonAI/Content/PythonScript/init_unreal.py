@@ -14,3 +14,5 @@ import ControlledTest
 import Test1
 import Test2
 import GameMain
+import SamplingPicture
+import ScreenShot
