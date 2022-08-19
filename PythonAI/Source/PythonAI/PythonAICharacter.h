@@ -38,8 +38,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
-//	UFUNCTION(BlueprintCallable)
-//	int* GetColorDate(const TArray<FColor>& ColorArr);
+	int* GetColorDate(const TArray<FColor>& ColorArr);
 
 protected:
 
@@ -90,6 +89,7 @@ protected:
 	UWorld* MyWorld = nullptr;
 	float Time = 0;
 	FIntPoint Resolution;
+	static int* image;
 
 public:
 	/** Returns CameraBoom subobject **/
