@@ -14,6 +14,8 @@ class Character:
         print("Character init")
         self.character_action = CharacterAction.CharacterAction()
     def jump(self):
+        a = SamplingPicture.get_color_date_arr()
+        print(a[1].r)
         self.ue_character.jump()
         position = self.ue_character.get_actor_location()
         print(position)
@@ -41,11 +43,6 @@ class Character:
     def look_right(self):
         self.ue_character.add_controller_yaw_input(0.6)
     def tick(self, delta):
-        color_date = SamplingPicture.get_color_date_arr()
-        if(len(color_date) == 0):
-            return
-        #color_date这样用，没有做格式化
-        #print(color_date[1].b)
         if( self.action_state == 0 ):
             self.character_action.CreateRandomAction()
             self.action_state = 1

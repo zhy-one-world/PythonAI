@@ -38,7 +38,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
-	int* GetColorDate(const TArray<FColor>& ColorArr);
+//	int* GetColorDate(const TArray<FColor>& ColorArr);
 
 protected:
 
@@ -90,11 +90,7 @@ protected:
 	float Time = 0;
 	FIntPoint Resolution;
 
-	UPROPERTY(BlueprintReadWrite)
-		UObject* AAA;
-
-	static int* image;
-
+//	static int* image;
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

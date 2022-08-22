@@ -21,7 +21,7 @@
 //////////////////////////////////////////////////////////////////////////
 // APythonAICharacter
 
-int* APythonAICharacter::image = NULL;
+//int* APythonAICharacter::image = NULL;
 APythonAICharacter::APythonAICharacter()
 {
 	// Set size for collision capsule
@@ -71,7 +71,7 @@ APythonAICharacter::APythonAICharacter()
 		}
 	}
 	
-	image = new int[4*Resolution.X*Resolution.Y];
+//	image = new int[4*Resolution.X*Resolution.Y];
 //	int FColorDateArr[4 * (Resolution.X) * (Resolution.Y)];
 //	4 * (Resolution.X) * (Resolution.Y) Resolution为分辨率信息
 
@@ -112,6 +112,7 @@ void APythonAICharacter::SetupPlayerInputComponent(class UInputComponent* Player
 void APythonAICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+/*
 	Time += DeltaTime;
 	if (Time > DeltaTime)
 	{
@@ -121,9 +122,10 @@ void APythonAICharacter::Tick(float DeltaTime)
 		//调用蓝图python通知截取成功了
 		Time = 0;
 	}
+*/
 }
 
-int* APythonAICharacter::GetColorDate(const TArray<FColor>& ColorArr)
+/*int* APythonAICharacter::GetColorDate(const TArray<FColor>& ColorArr)
 {
 	for (int32 i = 0; i < ColorArr.Num(); i++)
 	{
@@ -138,6 +140,7 @@ int* APythonAICharacter::GetColorDate(const TArray<FColor>& ColorArr)
 //	UE_LOG(LogTemp, Warning, TEXT("%s"), TEXT("aa") );
 	return image;
 }
+*/
 
 
 TArray<FColor> APythonAICharacter::PictureSampling(const FVector2D& RangeSize)
