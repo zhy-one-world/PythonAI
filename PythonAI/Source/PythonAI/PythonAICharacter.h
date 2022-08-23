@@ -82,6 +82,8 @@ protected:
 		TArray<FColor> PictureSampling(const FVector2D& RangeSize);
 	UPROPERTY(BlueprintReadWrite)
 	TArray<FColor> ColorDateArr;
+	UFUNCTION(BlueprintCallable)
+		TArray<FColor> GetColorDateArr(const TArray<FColor>& ColorArr);
 //	UGameUserSettings Settings;
 
 	UGameUserSettings* UserSetting = nullptr;

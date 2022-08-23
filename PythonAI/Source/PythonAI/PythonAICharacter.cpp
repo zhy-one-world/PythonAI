@@ -112,17 +112,16 @@ void APythonAICharacter::SetupPlayerInputComponent(class UInputComponent* Player
 void APythonAICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-/*
+
 	Time += DeltaTime;
 	if (Time > DeltaTime)
 	{
-		PictureSampling(FVector2D(Resolution.X, Resolution.Y));
-		GetColorDate(ColorDateArr);
+		PictureSampling(FVector2D(800, 600));
+//		GetColorDate(ColorDateArr);
 
 		//调用蓝图python通知截取成功了
 		Time = 0;
 	}
-*/
 }
 
 /*int* APythonAICharacter::GetColorDate(const TArray<FColor>& ColorArr)
@@ -155,7 +154,7 @@ TArray<FColor> APythonAICharacter::PictureSampling(const FVector2D& RangeSize)
 			if (RenderResource)
 			{
 					RenderResource->ReadPixels(ColorDateArr);
-//					UE_LOG(LogTemp, Warning, TEXT("%s"), *(ColorDateArr[10000].ToString()));
+//					UE_LOG(LogTemp, Warning, TEXT("%s"), *(ColorDateArr[1].ToString()));
 					return ColorDateArr;
 			}
 			ColorDateArr.Empty();
@@ -165,7 +164,7 @@ TArray<FColor> APythonAICharacter::PictureSampling(const FVector2D& RangeSize)
 		MyWorld = GetWorld();
 		if (MyWorld)
 		{
-			MyWorld->GetTimerManager().SetTimer(TimerHandle, Lab, 0.001f, false, 0);
+			MyWorld->GetTimerManager().SetTimer(TimerHandle, Lab, 0.0001f, false, 0);
 		}
 		return ColorDateArr;
 	}
@@ -173,6 +172,11 @@ TArray<FColor> APythonAICharacter::PictureSampling(const FVector2D& RangeSize)
 	return ColorDateArr;
 }
 
+
+TArray<FColor> APythonAICharacter::GetColorDateArr(const TArray<FColor>& ColorArr)
+{
+	return ColorArr;
+}
 
 void APythonAICharacter::OnResetVR()
 {

@@ -10,12 +10,11 @@ class Character:
     turntime = 0.0
     action_state = 0
     character_action = None
+    time = 0
     def __init__(self):
         print("Character init")
         self.character_action = CharacterAction.CharacterAction()
     def jump(self):
-        a = SamplingPicture.get_color_date_arr()
-        print(a[1].r)
         self.ue_character.jump()
         position = self.ue_character.get_actor_location()
         print(position)
@@ -43,6 +42,11 @@ class Character:
     def look_right(self):
         self.ue_character.add_controller_yaw_input(0.6)
     def tick(self, delta):
+        self.time+=delta
+        if(self.time>5):
+            a = SamplingPicture.get_color_date_arr()
+            print(a[1])
+            self.time = 0
         if( self.action_state == 0 ):
             self.character_action.CreateRandomAction()
             self.action_state = 1
