@@ -72,6 +72,12 @@ APythonAICharacter::APythonAICharacter()
 		}
 	}
 	
+	if (this)
+	{
+		this->PythonModule = "PCharacter";
+		this->PythonClass = "Character";
+	}
+
 //	image = new int[4*Resolution.X*Resolution.Y];
 //	int FColorDateArr[4 * (Resolution.X) * (Resolution.Y)];
 //	4 * (Resolution.X) * (Resolution.Y) Resolution为分辨率信息

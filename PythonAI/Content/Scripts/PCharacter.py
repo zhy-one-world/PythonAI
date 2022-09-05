@@ -1,4 +1,7 @@
+import unreal_engine
 import importlib
+import PCharacterManager
+importlib.reload(PCharacterManager)
 import PCharacterAutoController
 importlib.reload(PCharacterAutoController)
 import unreal_engine
@@ -13,6 +16,9 @@ class Character:
     time2 = 0
     time3 = 0
     time4 = 0
+
+    def __init__(self):
+        unreal_engine.find_class("ThirdPersonCharacter_C")
     def move_forward(self):
         if (self.ue_character_instance == None):
             return
@@ -113,5 +119,10 @@ class Character:
                     self.time4 = 0
             if((self.is_jump+self.fb_move+self.lr_move+self.ud_sight+self.lr_sight) == 0):
                 self.action_step =0
+    def begin_play(self):
+        print("Begin")
+        self.ue_character_instance = self.uobject
+        PCharacterManager.CharacterManager.character_list.append(self.ue_character_instance)
+        #在begin_play中使用character_list需要判断数组长度，构造函数中不可用
     def tick(self,delta_seconds):
         self.action(delta_seconds)
