@@ -5,10 +5,23 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/GameUserSettings.h"
+#include "PyCharacter.h"
 #include "PythonAICharacter.generated.h"
 
+
+USTRUCT(Blueprintable, BlueprintType)
+struct FMyStruct
+{
+	GENERATED_USTRUCT_BODY();
+
+	UPROPERTY(BlueprintReadOnly)
+		float HP = 10;
+	UPROPERTY(BlueprintReadOnly)
+		float Armor = 100;
+};
+
 UCLASS(config=Game)
-class APythonAICharacter : public ACharacter
+class APythonAICharacter : public APyCharacter
 {
 	GENERATED_BODY()
 
@@ -38,6 +51,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
+	UFUNCTION(BlueprintCallable)
+		float GetActorSpeed();
+
+	UFUNCTION(BlueprintCallable)
+		FVector GetCameraForwardVector();
 //	int* GetColorDate(const TArray<FColor>& ColorArr);
 
 protected:
@@ -57,12 +75,14 @@ protected:
 	 * Called via input to turn at a given rate. 
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
+	UFUNCTION(BlueprintCallable)
 	void TurnAtRate(float Rate);
 
 	/**
 	 * Called via input to turn look up/down at a given rate. 
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
+	UFUNCTION(BlueprintCallable)
 	void LookUpAtRate(float Rate);
 
 	/** Handler for when a touch input begins. */
@@ -80,7 +100,7 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 		TArray<FColor> PictureSampling(const FVector2D& RangeSize);
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadOnly)
 	TArray<FColor> ColorDateArr;
 	UFUNCTION(BlueprintCallable)
 		TArray<FColor> GetColorDateArr(const TArray<FColor>& ColorArr);
@@ -91,6 +111,9 @@ protected:
 	UWorld* MyWorld = nullptr;
 	float Time = 0;
 	FIntPoint Resolution;
+
+	UPROPERTY(BlueprintReadOnly)
+		FMyStruct My = { 11.0f,12.0f };
 
 //	static int* image;
 public:

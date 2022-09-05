@@ -14,6 +14,7 @@
 #include "IImageWrapper.h"
 #include "Misc/FileHelper.h"
 #include "ImageUtils.h"
+#include "Math/UnrealMathUtility.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -122,6 +123,31 @@ void APythonAICharacter::Tick(float DeltaTime)
 		//调用蓝图python通知截取成功了
 		Time = 0;
 	}
+}
+
+float APythonAICharacter::GetActorSpeed()
+{
+	if (this)
+	{
+		FVector Velocity = this->GetVelocity();
+		float Speed = FMath::Sqrt(FMath::Square<float>((float)Velocity.X) + FMath::Square<float>((float)Velocity.Y) + FMath::Square<float>((float)Velocity.Z));
+		return Speed;
+	}
+	else
+	{
+		return 0.0f;
+	}
+
+}
+
+FVector APythonAICharacter::GetCameraForwardVector()
+{
+	if (!CaptureComponent2D)
+	{
+		return FVector(0, 0, 0);
+	}
+	FVector CameraForwardVector = CaptureComponent2D->GetForwardVector();
+	return CameraForwardVector;
 }
 
 /*int* APythonAICharacter::GetColorDate(const TArray<FColor>& ColorArr)

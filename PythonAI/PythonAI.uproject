@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{8E312720-4C33-36EF-F1C4-23B8BFCAAB2E}",
+	"EngineAssociation": "4.27",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -11,16 +11,6 @@
 			"AdditionalDependencies": [
 				"Engine"
 			]
-		}
-	],
-	"Plugins": [
-		{
-			"Name": "EditorScriptingUtilities",
-			"Enabled": true
-		},
-		{
-			"Name": "SequencerScripting",
-			"Enabled": true
 		}
 	]
 }
