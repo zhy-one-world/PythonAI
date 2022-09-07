@@ -78,6 +78,9 @@ APythonAICharacter::APythonAICharacter()
 		this->PythonClass = "Character";
 	}
 
+
+
+
 //	image = new int[4*Resolution.X*Resolution.Y];
 //	int FColorDateArr[4 * (Resolution.X) * (Resolution.Y)];
 //	4 * (Resolution.X) * (Resolution.Y) Resolution为分辨率信息
@@ -131,6 +134,12 @@ void APythonAICharacter::Tick(float DeltaTime)
 	}
 }
 
+void APythonAICharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	FinishLevel.AddDynamic(this, &APythonAICharacter::ResetInterface);
+}
+
 float APythonAICharacter::GetActorSpeed()
 {
 	if (this)
@@ -155,6 +164,7 @@ FVector APythonAICharacter::GetCameraForwardVector()
 	FVector CameraForwardVector = CaptureComponent2D->GetForwardVector();
 	return CameraForwardVector;
 }
+
 
 /*int* APythonAICharacter::GetColorDate(const TArray<FColor>& ColorArr)
 {
@@ -270,4 +280,20 @@ void APythonAICharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+void APythonAICharacter::ResetInterface(const FVector& Location, const FString& MethodName, const FString& Args)
+{
+	SetActorLocation(Location);
+	CallPyCharacterMethod(MethodName, Args);
+}
+
+FString APythonAICharacter::GetPyhtonMethodName()
+{
+	return m_MethodName;
+}
+
+FString APythonAICharacter::GetPyhtonArgs()
+{
+	return m_Args;
 }

@@ -56,14 +56,24 @@ class Character:
             return
         self.ue_character_instance.TurnAtRate(0.6)
     def get_sight(self):
+        if (self.ue_character_instance == None):
+            return
         return self.ue_character_instance.ColorDateArr
     def get_actor_location(self):
+        if (self.ue_character_instance == None):
+            return
         return self.ue_character_instance.GetActorLocation()
     def get_actor_velocity(self):
+        if (self.ue_character_instance == None):
+            return
         return self.ue_character_instance.GetVelocity()
     def get_actor_speed(self):
+        if (self.ue_character_instance == None):
+            return
         return self.ue_character_instance.GetActorSpeed()
     def get_camera_vector(self):
+        if (self.ue_character_instance == None):
+            return
         return self.ue_character_instance.GetCameraForwardVector()
     def action(self,delta_seconds):
         if(self.action_step ==0):
@@ -119,10 +129,17 @@ class Character:
                     self.time4 = 0
             if((self.is_jump+self.fb_move+self.lr_move+self.ud_sight+self.lr_sight) == 0):
                 self.action_step =0
+
+    #吃到球后执行的函数
+    def finish_level(self):
+        print("结束")
     def begin_play(self):
         print("Begin")
+        if (self.uobject == None):
+            return
         self.ue_character_instance = self.uobject
         PCharacterManager.CharacterManager.character_list.append(self.ue_character_instance)
+#        self.uobject.SetActorLocation(unreal_engine.FVector(0,0,1000))
         #在begin_play中使用character_list需要判断数组长度，构造函数中不可用
     def tick(self,delta_seconds):
         self.action(delta_seconds)

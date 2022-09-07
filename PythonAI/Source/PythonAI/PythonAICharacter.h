@@ -9,6 +9,9 @@
 #include "PythonAICharacter.generated.h"
 
 
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FFinishLevel, const FVector&, Location,const FString&,MethodName,const FString&,Args);
+
 USTRUCT(Blueprintable, BlueprintType)
 struct FMyStruct
 {
@@ -43,6 +46,8 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void BeginPlay() override;
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -56,6 +61,18 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		FVector GetCameraForwardVector();
+
+	UPROPERTY(BlueprintAssignable)
+		FFinishLevel FinishLevel;
+
+	UFUNCTION()
+		void ResetInterface(const FVector& Location,const FString& MethodName, const FString& Args);
+	UFUNCTION()
+		FString GetPyhtonMethodName();
+	UFUNCTION()
+		FString GetPyhtonArgs();
+
+
 //	int* GetColorDate(const TArray<FColor>& ColorArr);
 
 protected:
@@ -70,6 +87,7 @@ protected:
 	/** Called for side to side input */
 	UFUNCTION(BlueprintCallable, Category = Character)
 	void MoveRight(float Value);
+
 
 	/** 
 	 * Called via input to turn at a given rate. 
@@ -121,5 +139,11 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "LevelFinishPythonMethodName")
+		FString m_MethodName;
+	UPROPERTY(EditAnywhere,Category = "LevelFinishPythonMethodName")
+		FString m_Args;
 };
 
