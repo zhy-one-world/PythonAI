@@ -25,33 +25,27 @@
 //int* APythonAICharacter::image = NULL;
 APythonAICharacter::APythonAICharacter()
 {
-	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	PrimaryActorTick.bCanEverTick = true;
 
-	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
 
-	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
-	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
-	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
@@ -77,25 +71,11 @@ APythonAICharacter::APythonAICharacter()
 		this->PythonModule = "PCharacter";
 		this->PythonClass = "Character";
 	}
-
-
-
-
-//	image = new int[4*Resolution.X*Resolution.Y];
-//	int FColorDateArr[4 * (Resolution.X) * (Resolution.Y)];
-//	4 * (Resolution.X) * (Resolution.Y) Resolution为分辨率信息
-
-
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Input
 
 void APythonAICharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
-	// Set up gameplay key bindings
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
@@ -103,19 +83,14 @@ void APythonAICharacter::SetupPlayerInputComponent(class UInputComponent* Player
 	PlayerInputComponent->BindAxis("MoveForward", this, &APythonAICharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APythonAICharacter::MoveRight);
 
-	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
-	// "turn" handles devices that provide an absolute delta, such as a mouse.
-	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("TurnRate", this, &APythonAICharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &APythonAICharacter::LookUpAtRate);
 
-	// handle touch devices
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &APythonAICharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &APythonAICharacter::TouchStopped);
 
-	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &APythonAICharacter::OnResetVR);
 }
 
@@ -127,17 +102,32 @@ void APythonAICharacter::Tick(float DeltaTime)
 	if (Time > DeltaTime)
 	{
 		PictureSampling(FVector2D(800, 600));
-//		GetColorDate(ColorDateArr);
-
-		//调用蓝图python通知截取成功了
 		Time = 0;
 	}
+
+	SetFCharacterData();
+	//if (this)
+	//{
+	//	if (ReadWriteSwitch)
+	//	{
+	//		SetPlayerControlledData();
+	//	}
+	//	else
+	//	{
+	//		ReadPlayerControlledData(this->PlayerControlledDataArr);
+	//	}
+	//}
 }
 
 void APythonAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	FinishLevel.AddDynamic(this, &APythonAICharacter::ResetInterface);
+	if (this&& CaptureComponent2D)
+	{
+		this->DefaultLocation = GetActorLocation();
+		this->DefaultRotation = GetActorRotation();
+	}
 }
 
 float APythonAICharacter::GetActorSpeed()
@@ -165,25 +155,6 @@ FVector APythonAICharacter::GetCameraForwardVector()
 	return CameraForwardVector;
 }
 
-
-/*int* APythonAICharacter::GetColorDate(const TArray<FColor>& ColorArr)
-{
-	for (int32 i = 0; i < ColorArr.Num(); i++)
-	{
-		for (int32 j = 4 * i; j < 4 * (i + 1); j++)
-		{
-			image[j] = ColorArr[i].B;
-			image[j+1] = ColorArr[i].G;
-			image[j+2] = ColorArr[i].R;
-			image[j+3] = ColorArr[i].A;
-		}
-	}
-//	UE_LOG(LogTemp, Warning, TEXT("%s"), TEXT("aa") );
-	return image;
-}
-*/
-
-
 TArray<FColor> APythonAICharacter::PictureSampling(const FVector2D& RangeSize)
 {
 	if (CaptureComponent2D && CaptureComponent2D->TextureTarget)
@@ -196,7 +167,6 @@ TArray<FColor> APythonAICharacter::PictureSampling(const FVector2D& RangeSize)
 			if (RenderResource)
 			{
 					RenderResource->ReadPixels(ColorDateArr);
-//					UE_LOG(LogTemp, Warning, TEXT("%s"), *(ColorDateArr[1].ToString()));
 					return ColorDateArr;
 			}
 			ColorDateArr.Empty();
@@ -284,7 +254,11 @@ void APythonAICharacter::MoveRight(float Value)
 
 void APythonAICharacter::ResetInterface(const FVector& Location, const FString& MethodName, const FString& Args)
 {
-	SetActorLocation(Location);
+	if (this)
+	{
+		SetActorLocationAndRotation(DefaultLocation, DefaultRotation);
+		this->ReadWriteSwitch = false;
+	}
 	CallPyCharacterMethod(MethodName, Args);
 }
 
@@ -296,4 +270,57 @@ FString APythonAICharacter::GetPyhtonMethodName()
 FString APythonAICharacter::GetPyhtonArgs()
 {
 	return m_Args;
+}
+
+void APythonAICharacter::SetFCharacterData()
+{
+	if (true)
+	{
+		FVector CharacterLocation = this->GetActorLocation();
+		FVector CharacterForwardVector = this->GetActorForwardVector();
+		FVector CameraForwardVector(0, 0, 0);
+		if (this->FollowCamera)
+		{
+//			CharacterData.CameraLocation = this->CaptureComponent2D->GetWorldLocation();
+			CameraForwardVector = this->FollowCamera ->GetForwardVector();
+		}
+		FCharacterData CharacterData = FCharacterData(CharacterLocation, CharacterForwardVector, CameraForwardVector);
+		this->CharacterDataArr.Add(CharacterData);
+	}
+}
+
+void APythonAICharacter::SetPlayerControlledData()
+{
+	if (InputComponent)
+	{
+		float MoveFB = InputComponent->GetAxisValue("MoveForward");
+		float MoveLR = InputComponent->GetAxisValue("MoveRight");
+		float TurnY = InputComponent->GetAxisValue("Turn");
+		float TurnX = InputComponent->GetAxisValue("LookUp");
+		FPlayerControlledData PlayerControlledData = FPlayerControlledData(MoveFB, MoveLR, TurnY, TurnX);
+		this->PlayerControlledDataArr.Add(PlayerControlledData);
+	}
+}
+
+void APythonAICharacter::ReadPlayerControlledData(const TArray<FPlayerControlledData>& TempPlayerControlledDataArr)
+{
+	if (this)
+	{
+		if (TempPlayerControlledDataArr.Num() != 0)
+		{
+			if (this->i < TempPlayerControlledDataArr.Num())
+			{
+				MoveForward(TempPlayerControlledDataArr[i].MoveFB);
+				MoveRight(TempPlayerControlledDataArr[i].MoveLR);
+				TurnAtRate(TempPlayerControlledDataArr[i].TurnX);
+				LookUpAtRate(TempPlayerControlledDataArr[i].TurnY);
+				this->i += 1;
+			}
+			else
+			{
+				this->i = 0;
+				this->ReadWriteSwitch = true;
+			}
+		}
+	}
 }

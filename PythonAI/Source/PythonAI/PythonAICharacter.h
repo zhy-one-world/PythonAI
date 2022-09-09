@@ -23,24 +23,54 @@ struct FMyStruct
 		float Armor = 100;
 };
 
+USTRUCT(BlueprintType)
+struct FCharacterData
+{
+	GENERATED_USTRUCT_BODY();
+	UPROPERTY(BlueprintReadOnly)
+	FVector CharacterLocation;
+	UPROPERTY(BlueprintReadOnly)
+	FVector CharacterForwardVector;
+	//UPROPERTY(BlueprintReadOnly)
+	//FVector CameraLocation;
+	UPROPERTY(BlueprintReadOnly)
+	FVector CameraForwardVector;
+	FCharacterData(){}
+	FCharacterData(FVector _CharacterLocation,FVector _CharacterForwardVector,FVector _CameraForwardVector):CharacterLocation(_CharacterLocation),CharacterForwardVector(_CharacterForwardVector),CameraForwardVector(_CameraForwardVector){}
+};
+USTRUCT(BlueprintType)
+struct FPlayerControlledData
+{
+	GENERATED_USTRUCT_BODY();
+
+	UPROPERTY(BlueprintReadOnly)
+	float MoveFB;
+	UPROPERTY(BlueprintReadOnly)
+	float MoveLR;
+	UPROPERTY(BlueprintReadOnly)
+	float TurnY;
+	UPROPERTY(BlueprintReadOnly)
+	float TurnX;
+
+	FPlayerControlledData(){}
+	FPlayerControlledData(float _MoveFB,float _MoveLR, float _TurnY, float _TurnX) :MoveFB(_MoveFB), MoveLR(_MoveLR), TurnY(_TurnY), TurnX(_TurnY) {}
+	       
+};
+
 UCLASS(config=Game)
 class APythonAICharacter : public APyCharacter
 {
 	GENERATED_BODY()
 
-	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
-	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Capture, meta = (AllowPrivateAccess = "true"))
 		class USceneCaptureComponent2D* CaptureComponent2D;
 public:
-
-	// Called every frame
 	
 	APythonAICharacter();
 
@@ -56,93 +86,120 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
-	UFUNCTION(BlueprintCallable)
-		float GetActorSpeed();
-
-	UFUNCTION(BlueprintCallable)
-		FVector GetCameraForwardVector();
-
-	UPROPERTY(BlueprintAssignable)
-		FFinishLevel FinishLevel;
-
-	UFUNCTION()
-		void ResetInterface(const FVector& Location,const FString& MethodName, const FString& Args);
-	UFUNCTION()
-		FString GetPyhtonMethodName();
-	UFUNCTION()
-		FString GetPyhtonArgs();
-
-
-//	int* GetColorDate(const TArray<FColor>& ColorArr);
-
-protected:
-
-	/** Resets HMD orientation in VR. */
-	void OnResetVR();
-
-	/** Called for forwards/backward input */
-	UFUNCTION(BlueprintCallable, Category = Character)
-	void MoveForward(float Value);
-
-	/** Called for side to side input */
-	UFUNCTION(BlueprintCallable, Category = Character)
-	void MoveRight(float Value);
-
-
-	/** 
-	 * Called via input to turn at a given rate. 
-	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
-	 */
-	UFUNCTION(BlueprintCallable)
-	void TurnAtRate(float Rate);
-
-	/**
-	 * Called via input to turn look up/down at a given rate. 
-	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
-	 */
-	UFUNCTION(BlueprintCallable)
-	void LookUpAtRate(float Rate);
-
-	/** Handler for when a touch input begins. */
-	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
-
-	/** Handler for when a touch input stops. */
-	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
-
-//	int FColorDateArr[2073600 * 4];
-
-protected:
-	// APawn interface
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	// End of APawn interface
-
-	UFUNCTION(BlueprintCallable)
-		TArray<FColor> PictureSampling(const FVector2D& RangeSize);
-	UPROPERTY(BlueprintReadOnly)
-	TArray<FColor> ColorDateArr;
-	UFUNCTION(BlueprintCallable)
-		TArray<FColor> GetColorDateArr(const TArray<FColor>& ColorArr);
-//	UGameUserSettings Settings;
-
-	UGameUserSettings* UserSetting = nullptr;
-
-	UWorld* MyWorld = nullptr;
-	float Time = 0;
-	FIntPoint Resolution;
-
-	UPROPERTY(BlueprintReadOnly)
-		FMyStruct My = { 11.0f,12.0f };
-
-//	static int* image;
-public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	/*获取小白人速度*/
+	UFUNCTION(BlueprintCallable)
+		float GetActorSpeed();
+
+	/*获取抓拍镜头向前向量*/
+	UFUNCTION(BlueprintCallable)
+		FVector GetCameraForwardVector();
+
+	/*完成关卡的回调*/
+	UPROPERTY(BlueprintAssignable)
+		FFinishLevel FinishLevel;
+
+	/*重置小白人的设置，包括执行python中的函数*/
+	UFUNCTION()
+		void ResetInterface(const FVector& Location,const FString& MethodName, const FString& Args);
+
+	/*获取完成关卡要执行python函数的名称*/
+	UFUNCTION()
+		FString GetPyhtonMethodName();
+
+	/*获取完成关卡要执行python函数的参数*/
+	UFUNCTION()
+		FString GetPyhtonArgs();
+
+	/*记录完成关卡的表象信息*/
+	UPROPERTY(BlueprintReadWrite)
+	TArray<FCharacterData> CharacterDataArr;
+
+	/*记录完成关卡的表象信息函数*/
+	UFUNCTION()
+		void SetFCharacterData();
+
+	/*记录角色完成关卡的操作*/
+	UPROPERTY(BlueprintReadWrite)
+		TArray<FPlayerControlledData> PlayerControlledDataArr;
+
+	/*记录玩家操作数据函数*/
+	UFUNCTION()
+		void SetPlayerControlledData();
+
+	/*读取玩家操作*/
+	UFUNCTION()
+		void ReadPlayerControlledData(const TArray<FPlayerControlledData>& TempPlayerControlledDataArr);
 protected:
+
+	void OnResetVR();
+
+	UFUNCTION(BlueprintCallable, Category = Character)
+	void MoveForward(float Value);
+
+	UFUNCTION(BlueprintCallable, Category = Character)
+	void MoveRight(float Value);
+
+	UFUNCTION(BlueprintCallable)
+	void TurnAtRate(float Rate);
+
+	UFUNCTION(BlueprintCallable)
+	void LookUpAtRate(float Rate);
+
+	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
+
+	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
+
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	/*获取RGBA数组*/
+	UFUNCTION(BlueprintCallable)
+		TArray<FColor> PictureSampling(const FVector2D& RangeSize);
+
+	/*获取RGBA数组，Python的接口*/
+	UPROPERTY(BlueprintReadOnly)
+	TArray<FColor> ColorDateArr;
+
+	/*获取RGBA数组*/
+	UFUNCTION(BlueprintCallable)
+		TArray<FColor> GetColorDateArr(const TArray<FColor>& ColorArr);
+
+	/*目的为了获取屏幕分辨率*/
+	UGameUserSettings* UserSetting = nullptr;
+
+	/*世界指针*/
+	UWorld* MyWorld = nullptr;
+
+	/*限制获取RGBA间隔时间*/
+	float Time = 0;
+	float Time1 = 0;
+	int32 i = 0;
+
+	/*玩家操纵读写开关*/
+	bool ReadWriteSwitch = true;
+
+	/*角色开始的位置*/
+	FVector DefaultLocation;
+
+	/*角色开始的旋转*/
+	FRotator DefaultRotation;
+
+	/*分辨率信息*/
+	FIntPoint Resolution;
+
+	/*在python中测试的结构体*/
+	UPROPERTY(BlueprintReadOnly)
+		FMyStruct My = { 11.0f,12.0f };
+
+	/*开放在编辑器中的Python方法，在完成关卡调用的python函数*/
 	UPROPERTY(EditAnywhere, Category = "LevelFinishPythonMethodName")
 		FString m_MethodName;
+
+	/*开放在编辑器中的Python方法的参数，在完成关卡调用的python函数的参数*/
 	UPROPERTY(EditAnywhere,Category = "LevelFinishPythonMethodName")
 		FString m_Args;
 };
