@@ -14,6 +14,7 @@
 #include "IImageWrapper.h"
 #include "Misc/FileHelper.h"
 #include "ImageUtils.h"
+#include "TextReadWrite.h"
 #include "Math/UnrealMathUtility.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
@@ -44,9 +45,15 @@ APythonAICharacter::APythonAICharacter()
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom->bUsePawnControlRotation = false; // Rotate the arm based on the controller
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	//if (FollowCamera)
+	//{
+	//	FollowCamera->SetupAttachment(RootComponent);
+	//	FollowCamera->SetRelativeLocation(FVector(-250, 0, 0));
+	//}
+
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
@@ -104,19 +111,29 @@ void APythonAICharacter::Tick(float DeltaTime)
 		PictureSampling(FVector2D(800, 600));
 		Time = 0;
 	}
+	if (WriteOrRead)
+	{
+		SetFCharacterData();
+	}
+	else
+	{
+		if (0 != ReadCharacterDataArr.Num())
+		{
+			if (this)
+			{
 
-	SetFCharacterData();
-	//if (this)
-	//{
-	//	if (ReadWriteSwitch)
-	//	{
-	//		SetPlayerControlledData();
-	//	}
-	//	else
-	//	{
-	//		ReadPlayerControlledData(this->PlayerControlledDataArr);
-	//	}
-	//}
+				FVector TempCharacterVector = FVector(FCString::Atof(*ReadCharacterDataArr[LocationCount]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 1]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 2]));
+				this->SetActorLocation(TempCharacterVector);
+				FRotator TempCharacterRotator = FRotator(FCString::Atof(*ReadCharacterDataArr[LocationCount + 3]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 4]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 5]));
+				this->SetActorRotation(TempCharacterRotator);
+				this->LocationCount += 9;
+				if (this->LocationCount >= ReadCharacterDataArr.Num())
+				{
+					this->LocationCount = 0;
+				}
+			}
+		}
+	}
 }
 
 void APythonAICharacter::BeginPlay()
@@ -128,6 +145,7 @@ void APythonAICharacter::BeginPlay()
 		this->DefaultLocation = GetActorLocation();
 		this->DefaultRotation = GetActorRotation();
 	}
+	UTextReadWrite::LoadText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData.TXT"), ReadCharacterDataArr);
 }
 
 float APythonAICharacter::GetActorSpeed()
@@ -274,17 +292,18 @@ FString APythonAICharacter::GetPyhtonArgs()
 
 void APythonAICharacter::SetFCharacterData()
 {
-	if (true)
+	if (this)
 	{
 		FVector CharacterLocation = this->GetActorLocation();
-		FVector CharacterForwardVector = this->GetActorForwardVector();
+		FRotator CharacterRotator = this->GetActorRotation();
 		FVector CameraForwardVector(0, 0, 0);
 		if (this->FollowCamera)
 		{
 //			CharacterData.CameraLocation = this->CaptureComponent2D->GetWorldLocation();
 			CameraForwardVector = this->FollowCamera ->GetForwardVector();
 		}
-		FCharacterData CharacterData = FCharacterData(CharacterLocation, CharacterForwardVector, CameraForwardVector);
+		FCharacterData CharacterData = FCharacterData(CharacterLocation, CharacterRotator, CameraForwardVector);
+		WriteFCharacterData(CharacterData);
 		this->CharacterDataArr.Add(CharacterData);
 	}
 }
@@ -308,19 +327,55 @@ void APythonAICharacter::ReadPlayerControlledData(const TArray<FPlayerControlled
 	{
 		if (TempPlayerControlledDataArr.Num() != 0)
 		{
-			if (this->i < TempPlayerControlledDataArr.Num())
+			if (this->Count < TempPlayerControlledDataArr.Num())
 			{
-				MoveForward(TempPlayerControlledDataArr[i].MoveFB);
-				MoveRight(TempPlayerControlledDataArr[i].MoveLR);
-				TurnAtRate(TempPlayerControlledDataArr[i].TurnX);
-				LookUpAtRate(TempPlayerControlledDataArr[i].TurnY);
-				this->i += 1;
+				MoveForward(TempPlayerControlledDataArr[Count].MoveFB);
+				MoveRight(TempPlayerControlledDataArr[Count].MoveLR);
+				TurnAtRate(TempPlayerControlledDataArr[Count].TurnX);
+				LookUpAtRate(TempPlayerControlledDataArr[Count].TurnY);
+				this->Count += 1;
 			}
 			else
 			{
-				this->i = 0;
+				this->Count = 0;
 				this->ReadWriteSwitch = true;
 			}
 		}
 	}
+}
+
+void APythonAICharacter::WriteFCharacterData(const FCharacterData& P_CharacterData)
+{
+	WriteCharacterLoationData(P_CharacterData);
+
+	WriteCharacterRotator(P_CharacterData);
+
+	WriteCameraForwardData(P_CharacterData);
+}
+
+void APythonAICharacter::WriteCharacterLoationData(const FCharacterData& P_CharacterData)
+{
+	FString CharacterLocationX = FString::SanitizeFloat(P_CharacterData.CharacterLocation.X) + FString("\n");
+	FString CharacterLocationY = FString::SanitizeFloat(P_CharacterData.CharacterLocation.Y) + FString("\n");
+	FString CharacterLocationZ = FString::SanitizeFloat(P_CharacterData.CharacterLocation.Z) + FString("\n");
+	FString TotalCharacterLocationData = CharacterLocationX + CharacterLocationY + CharacterLocationZ;
+	UTextReadWrite::SaveText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData.TXT"), TotalCharacterLocationData);
+}
+
+void APythonAICharacter::WriteCharacterRotator(const FCharacterData& P_CharacterData)
+{
+	FString CharacterForwardX = FString::SanitizeFloat(P_CharacterData.CharacterRotator.Pitch) + FString("\n");
+	FString CharacterForwardY = FString::SanitizeFloat(P_CharacterData.CharacterRotator.Yaw) + FString("\n");
+	FString CharacterForwardZ = FString::SanitizeFloat(P_CharacterData.CharacterRotator.Roll) + FString("\n");
+	FString TotalCharacterRotatorData = CharacterForwardX + CharacterForwardY + CharacterForwardZ;
+	UTextReadWrite::SaveText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData.TXT"), TotalCharacterRotatorData);
+}
+
+void APythonAICharacter::WriteCameraForwardData(const FCharacterData& P_CharacterData)
+{
+	FString CameraForwardX = FString::SanitizeFloat(P_CharacterData.CameraForwardVector.X) + FString("\n");
+	FString CameraForwardY = FString::SanitizeFloat(P_CharacterData.CameraForwardVector.Y) + FString("\n");
+	FString CameraForwardZ = FString::SanitizeFloat(P_CharacterData.CameraForwardVector.Z) + FString("\n");
+	FString TotalCameraForwardData = CameraForwardX + CameraForwardY + CameraForwardZ;
+	UTextReadWrite::SaveText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData.TXT"), TotalCameraForwardData);
 }

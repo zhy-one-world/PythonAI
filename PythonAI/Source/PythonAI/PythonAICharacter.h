@@ -30,13 +30,13 @@ struct FCharacterData
 	UPROPERTY(BlueprintReadOnly)
 	FVector CharacterLocation;
 	UPROPERTY(BlueprintReadOnly)
-	FVector CharacterForwardVector;
+	FRotator CharacterRotator;
 	//UPROPERTY(BlueprintReadOnly)
 	//FVector CameraLocation;
 	UPROPERTY(BlueprintReadOnly)
 	FVector CameraForwardVector;
 	FCharacterData(){}
-	FCharacterData(FVector _CharacterLocation,FVector _CharacterForwardVector,FVector _CameraForwardVector):CharacterLocation(_CharacterLocation),CharacterForwardVector(_CharacterForwardVector),CameraForwardVector(_CameraForwardVector){}
+	FCharacterData(FVector _CharacterLocation,FRotator _CharacterRotator,FVector _CameraForwardVector):CharacterLocation(_CharacterLocation),CharacterRotator(_CharacterRotator),CameraForwardVector(_CameraForwardVector){}
 };
 USTRUCT(BlueprintType)
 struct FPlayerControlledData
@@ -134,6 +134,30 @@ public:
 	/*读取玩家操作*/
 	UFUNCTION()
 		void ReadPlayerControlledData(const TArray<FPlayerControlledData>& TempPlayerControlledDataArr);
+
+	/*将完成关卡的表象信息写入文件*/
+	UFUNCTION(BlueprintCallable)
+		void WriteFCharacterData(const FCharacterData& P_CharacterDataArr);
+
+	/*将完成关卡的表象角色位置信息写入文件*/
+	UFUNCTION(BlueprintCallable)
+		void WriteCharacterLoationData(const FCharacterData& P_CharacterData);
+
+	/*将完成关卡的表象角色旋转信息写入文件*/
+	UFUNCTION(BlueprintCallable)
+		void WriteCharacterRotator(const FCharacterData& P_CharacterData);
+
+	/*将完成关卡的表象相机向前向量信息写入文件*/
+	UFUNCTION(BlueprintCallable)
+		void WriteCameraForwardData(const FCharacterData& P_CharacterData);
+
+	/*读取出角色信息的数组，每个元素中有一个数*/
+	TArray<FString> ReadCharacterDataArr;
+
+	/*读写切换，true为写，false为读*/
+	UPROPERTY(EditAnywhere)
+	bool WriteOrRead = true;
+
 protected:
 
 	void OnResetVR();
@@ -176,17 +200,24 @@ protected:
 
 	/*限制获取RGBA间隔时间*/
 	float Time = 0;
+
+	/*用于设置数据写入间隔*/
 	float Time1 = 0;
-	int32 i = 0;
+
+	/*用于记录读取玩家输入信息的限制次数*/
+	int32 Count = 0;
+
+	/*每帧设置位置信息的计数*/
+	int32 LocationCount = 0;
 
 	/*玩家操纵读写开关*/
 	bool ReadWriteSwitch = true;
 
 	/*角色开始的位置*/
-	FVector DefaultLocation;
+	FVector DefaultLocation = FVector(0, 0, 0);
 
 	/*角色开始的旋转*/
-	FRotator DefaultRotation;
+	FRotator DefaultRotation = FRotator(0, 0, 0);
 
 	/*分辨率信息*/
 	FIntPoint Resolution;
