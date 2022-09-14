@@ -158,6 +158,18 @@ public:
 	UPROPERTY(EditAnywhere)
 	bool WriteOrRead = true;
 
+	/*读取数据信息并表现出来*/
+	UFUNCTION(BlueprintCallable)
+		void ReadFCharacter();
+
+	/*加载文件中角色数据到栈区*/
+	UFUNCTION(BlueprintCallable)
+		bool LoadCharacterDataToStack();
+	
+	/*用于判断文件加载是否成功*/
+	UPROPERTY()
+		bool LoadFileSuccess = true;
+
 protected:
 
 	void OnResetVR();
@@ -207,11 +219,20 @@ protected:
 	/*用于记录读取玩家输入信息的限制次数*/
 	int32 Count = 0;
 
-	/*每帧设置位置信息的计数*/
+	/*每帧设置角色变换的计数*/
 	int32 LocationCount = 0;
 
 	/*玩家操纵读写开关*/
 	bool ReadWriteSwitch = true;
+
+	/*文件切割的时间*/
+	float FileTime = 0;
+
+	/*文件写入的数字名称*/
+	int32 WriteFileNameNum = 0;
+
+	/*文件读出的数字名称*/
+	int32 ReadFileNameNum = 0;
 
 	/*角色开始的位置*/
 	FVector DefaultLocation = FVector(0, 0, 0);

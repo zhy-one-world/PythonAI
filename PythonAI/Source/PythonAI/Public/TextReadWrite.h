@@ -18,5 +18,5 @@ public:
 		static void SaveText(FString Directory, FString FileName, FString Text);
 
 		UFUNCTION(BlueprintCallable)
-			static void LoadText(FString Directory, FString FileName, TArray<FString>& ResultTextArr);
+			static bool LoadText(FString Directory, FString FileName, TArray<FString>&ResultTextArr);
 };

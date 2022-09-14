@@ -12,11 +12,16 @@ void UTextReadWrite::SaveText(FString Directory, FString FileName, FString Text)
 	FFileHelper::SaveStringToFile(Text, *Directory,FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
 }
 
-void UTextReadWrite::LoadText(FString Directory, FString FileName, TArray<FString>& ResultTextArr)
+bool UTextReadWrite::LoadText(FString Directory, FString FileName, TArray<FString>& ResultTextArr)
 {
 	Directory += "\\" + FileName;
 	if (FPlatformFileManager::Get().GetPlatformFile().FileExists(*Directory))
 	{
 		FFileHelper::LoadFileToStringArray(ResultTextArr, *Directory);
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }

@@ -111,28 +111,19 @@ void APythonAICharacter::Tick(float DeltaTime)
 		PictureSampling(FVector2D(800, 600));
 		Time = 0;
 	}
+	FileTime += DeltaTime;
+	if (FileTime > 10)
+	{
+		WriteFileNameNum += 1;
+		FileTime = 0;
+	}
 	if (WriteOrRead)
 	{
 		SetFCharacterData();
 	}
 	else
 	{
-		if (0 != ReadCharacterDataArr.Num())
-		{
-			if (this)
-			{
-
-				FVector TempCharacterVector = FVector(FCString::Atof(*ReadCharacterDataArr[LocationCount]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 1]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 2]));
-				this->SetActorLocation(TempCharacterVector);
-				FRotator TempCharacterRotator = FRotator(FCString::Atof(*ReadCharacterDataArr[LocationCount + 3]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 4]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 5]));
-				this->SetActorRotation(TempCharacterRotator);
-				this->LocationCount += 9;
-				if (this->LocationCount >= ReadCharacterDataArr.Num())
-				{
-					this->LocationCount = 0;
-				}
-			}
-		}
+		ReadFCharacter();
 	}
 }
 
@@ -145,7 +136,6 @@ void APythonAICharacter::BeginPlay()
 		this->DefaultLocation = GetActorLocation();
 		this->DefaultRotation = GetActorRotation();
 	}
-	UTextReadWrite::LoadText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData.TXT"), ReadCharacterDataArr);
 }
 
 float APythonAICharacter::GetActorSpeed()
@@ -359,7 +349,7 @@ void APythonAICharacter::WriteCharacterLoationData(const FCharacterData& P_Chara
 	FString CharacterLocationY = FString::SanitizeFloat(P_CharacterData.CharacterLocation.Y) + FString("\n");
 	FString CharacterLocationZ = FString::SanitizeFloat(P_CharacterData.CharacterLocation.Z) + FString("\n");
 	FString TotalCharacterLocationData = CharacterLocationX + CharacterLocationY + CharacterLocationZ;
-	UTextReadWrite::SaveText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData.TXT"), TotalCharacterLocationData);
+	UTextReadWrite::SaveText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData") + (FString::FromInt(WriteFileNameNum)) + FString(".TXT"), TotalCharacterLocationData);
 }
 
 void APythonAICharacter::WriteCharacterRotator(const FCharacterData& P_CharacterData)
@@ -368,7 +358,7 @@ void APythonAICharacter::WriteCharacterRotator(const FCharacterData& P_Character
 	FString CharacterForwardY = FString::SanitizeFloat(P_CharacterData.CharacterRotator.Yaw) + FString("\n");
 	FString CharacterForwardZ = FString::SanitizeFloat(P_CharacterData.CharacterRotator.Roll) + FString("\n");
 	FString TotalCharacterRotatorData = CharacterForwardX + CharacterForwardY + CharacterForwardZ;
-	UTextReadWrite::SaveText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData.TXT"), TotalCharacterRotatorData);
+	UTextReadWrite::SaveText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData") + (FString::FromInt(WriteFileNameNum)) + FString(".TXT"), TotalCharacterRotatorData);
 }
 
 void APythonAICharacter::WriteCameraForwardData(const FCharacterData& P_CharacterData)
@@ -377,5 +367,44 @@ void APythonAICharacter::WriteCameraForwardData(const FCharacterData& P_Characte
 	FString CameraForwardY = FString::SanitizeFloat(P_CharacterData.CameraForwardVector.Y) + FString("\n");
 	FString CameraForwardZ = FString::SanitizeFloat(P_CharacterData.CameraForwardVector.Z) + FString("\n");
 	FString TotalCameraForwardData = CameraForwardX + CameraForwardY + CameraForwardZ;
-	UTextReadWrite::SaveText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData.TXT"), TotalCameraForwardData);
+	UTextReadWrite::SaveText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData")+(FString::FromInt(WriteFileNameNum))+FString(".TXT"), TotalCameraForwardData);
+}
+
+void APythonAICharacter::ReadFCharacter()
+{
+	if (0 == ReadCharacterDataArr.Num())
+	{
+		LoadFileSuccess = LoadCharacterDataToStack();
+	}
+	else if (LoadFileSuccess)
+	{
+		if (this)
+		{
+
+			FVector TempCharacterVector = FVector(FCString::Atof(*ReadCharacterDataArr[LocationCount]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 1]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 2]));
+			this->SetActorLocation(TempCharacterVector);
+			FRotator TempCharacterRotator = FRotator(FCString::Atof(*ReadCharacterDataArr[LocationCount + 3]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 4]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 5]));
+			this->SetActorRotation(TempCharacterRotator);
+			this->LocationCount += 9;
+			if (this->LocationCount >= ReadCharacterDataArr.Num())
+			{
+				this->LocationCount = 0;
+				this->ReadFileNameNum += 1;
+				ReadCharacterDataArr.Empty();
+			}
+		}
+	}
+	if(!LoadFileSuccess)
+	{
+		if (this)
+		{
+			this->ReadFileNameNum = 0;
+		}
+	}
+}
+
+bool APythonAICharacter::LoadCharacterDataToStack()
+{
+		bool LoadSuccess = UTextReadWrite::LoadText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData") + FString::FromInt(ReadFileNameNum) + FString(".TXT"), ReadCharacterDataArr);
+		return LoadSuccess;
 }
