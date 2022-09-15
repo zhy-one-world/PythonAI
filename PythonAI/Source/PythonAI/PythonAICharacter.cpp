@@ -120,12 +120,12 @@ void APythonAICharacter::Tick(float DeltaTime)
 	}
 	if (WriteOrRead)
 	{
-//		SetFCharacterData();
+		SetFCharacterData();
 		SetFPlayerControlledData();
 	}
 	else
 	{
-//		ReadFCharacter();
+		ReadFCharacter();
 		ReadFPlayerControlled();
 	}
 }
@@ -340,7 +340,7 @@ void APythonAICharacter::ReadFPlayerControlled()
 	{
 		LoadFileSuccess = LoadPlayerControlledDataToStack();
 	}
-	else if (LoadFileSuccess)
+	if (LoadFileSuccess)
 	{
 		if (this)
 		{
@@ -359,12 +359,14 @@ void APythonAICharacter::ReadFPlayerControlled()
 			{
 				ACharacter::Jump();
 			}
-			this->PlayerControlledIndex += 5;
+			this->PlayerControlledIndex += 14;
 			if (this->PlayerControlledIndex >= ReadPlayerControlledDataArr.Num())
 			{
-				this->PlayerControlledIndex = 0;
+				this->PlayerControlledIndex = 9;
 				this->ReadFileNameNum += 1;
+				this->LocationCount = 0;
 				ReadPlayerControlledDataArr.Empty();
+				ReadCharacterDataArr.Empty();
 			}
 		}
 	}
@@ -422,7 +424,7 @@ void APythonAICharacter::ReadFCharacter()
 	{
 		LoadFileSuccess = LoadCharacterDataToStack();
 	}
-	else if (LoadFileSuccess)
+	if (LoadFileSuccess)
 	{
 		if (this)
 		{
@@ -431,13 +433,13 @@ void APythonAICharacter::ReadFCharacter()
 			this->SetActorLocation(TempCharacterVector);
 			FRotator TempCharacterRotator = FRotator(FCString::Atof(*ReadCharacterDataArr[LocationCount + 3]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 4]), FCString::Atof(*ReadCharacterDataArr[LocationCount + 5]));
 			this->SetActorRotation(TempCharacterRotator);
-			this->LocationCount += 9;
-			if (this->LocationCount >= ReadCharacterDataArr.Num())
-			{
-				this->LocationCount = 0;
-				this->ReadFileNameNum += 1;
-				ReadCharacterDataArr.Empty();
-			}
+			this->LocationCount += 14;
+			//if (this->LocationCount >= ReadCharacterDataArr.Num())
+			//{
+			//	this->LocationCount = 0;
+			//	this->ReadFileNameNum += 1;
+			//	ReadCharacterDataArr.Empty();
+			//}
 		}
 	}
 	if(!LoadFileSuccess)

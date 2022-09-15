@@ -259,7 +259,7 @@ protected:
 	int32 LocationCount = 0;
 
 	/*从文件中读取玩家操作数据的位置*/
-	int32 PlayerControlledIndex = 0;
+	int32 PlayerControlledIndex = 9;
 
 	/*文件切割的时间*/
 	float FileTime = 0;
