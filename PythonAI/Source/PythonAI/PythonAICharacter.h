@@ -48,12 +48,14 @@ struct FPlayerControlledData
 	UPROPERTY(BlueprintReadOnly)
 	float MoveLR;
 	UPROPERTY(BlueprintReadOnly)
+	float TurnX;
+	UPROPERTY(BlueprintReadOnly)
 	float TurnY;
 	UPROPERTY(BlueprintReadOnly)
-	float TurnX;
+		int32 Jump;
 
 	FPlayerControlledData(){}
-	FPlayerControlledData(float _MoveFB,float _MoveLR, float _TurnY, float _TurnX) :MoveFB(_MoveFB), MoveLR(_MoveLR), TurnY(_TurnY), TurnX(_TurnY) {}
+	FPlayerControlledData(float _MoveFB,float _MoveLR, float _TurnX, float _TurnY , int32 _Jump) :MoveFB(_MoveFB), MoveLR(_MoveLR), TurnX(_TurnX), TurnY(_TurnY),Jump(_Jump) {}
 	       
 };
 
@@ -127,15 +129,34 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		TArray<FPlayerControlledData> PlayerControlledDataArr;
 
-	/*记录玩家操作数据函数*/
-	UFUNCTION()
-		void SetPlayerControlledData();
 
-	/*读取玩家操作*/
-	UFUNCTION()
-		void ReadPlayerControlledData(const TArray<FPlayerControlledData>& TempPlayerControlledDataArr);
 
-	/*将完成关卡的表象信息写入文件*/
+	UPROPERTY(BlueprintReadWrite)
+		TArray<FPlayerControlledData> PlayerControlledDataArraaaa;
+
+
+
+
+
+	/*记录玩家操作信息*/
+	UFUNCTION()
+		void SetFPlayerControlledData();
+
+	/*将玩家控制器总信息写入文件*/
+	UFUNCTION()
+		void WriteFPlayerControlledData(const FPlayerControlledData& P_PlayerControlledData);
+
+	/*记录玩家输入方向键及鼠标方向及跳跃信息*/
+	UFUNCTION()
+		void WritePlayerControlledBaseData(const FPlayerControlledData& P_PlayerControlledData);
+
+	/*读取数据信息并表现出来*/
+	UFUNCTION(BlueprintCallable)
+		void ReadFPlayerControlled();
+
+
+
+	/*将完成关卡的表象总信息写入文件*/
 	UFUNCTION(BlueprintCallable)
 		void WriteFCharacterData(const FCharacterData& P_CharacterDataArr);
 
@@ -154,8 +175,11 @@ public:
 	/*读取出角色信息的数组，每个元素中有一个数*/
 	TArray<FString> ReadCharacterDataArr;
 
+	/*读取出玩家控制器信息的数组，每个元素中有一个数*/
+	TArray<FString> ReadPlayerControlledDataArr;
+
 	/*读写切换，true为写，false为读*/
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	bool WriteOrRead = true;
 
 	/*读取数据信息并表现出来*/
@@ -165,10 +189,22 @@ public:
 	/*加载文件中角色数据到栈区*/
 	UFUNCTION(BlueprintCallable)
 		bool LoadCharacterDataToStack();
+
+	/*加载文件中玩家操作数据到栈区*/
+	UFUNCTION(BlueprintCallable)
+		bool LoadPlayerControlledDataToStack();
 	
 	/*用于判断文件加载是否成功*/
 	UPROPERTY()
 		bool LoadFileSuccess = true;
+
+	/*用于记录玩家按下跳跃按键*/
+	UFUNCTION()
+		void WantToJump();
+
+	/*用于记录是否按下跳跃键*/
+	UPROPERTY()
+		bool JumpSwitch = false;
 
 protected:
 
@@ -211,7 +247,7 @@ protected:
 	UWorld* MyWorld = nullptr;
 
 	/*限制获取RGBA间隔时间*/
-	float Time = 0;
+	float SamplingTime = 0;
 
 	/*用于设置数据写入间隔*/
 	float Time1 = 0;
@@ -222,8 +258,8 @@ protected:
 	/*每帧设置角色变换的计数*/
 	int32 LocationCount = 0;
 
-	/*玩家操纵读写开关*/
-	bool ReadWriteSwitch = true;
+	/*从文件中读取玩家操作数据的位置*/
+	int32 PlayerControlledIndex = 0;
 
 	/*文件切割的时间*/
 	float FileTime = 0;
@@ -233,6 +269,9 @@ protected:
 
 	/*文件读出的数字名称*/
 	int32 ReadFileNameNum = 0;
+
+	/*文件读出玩家操作的数字名称*/
+	int32 ReadPlayerNameNum = 0;
 
 	/*角色开始的位置*/
 	FVector DefaultLocation = FVector(0, 0, 0);
@@ -254,5 +293,18 @@ protected:
 	/*开放在编辑器中的Python方法的参数，在完成关卡调用的python函数的参数*/
 	UPROPERTY(EditAnywhere,Category = "LevelFinishPythonMethodName")
 		FString m_Args;
+
+	/*写入文件的路径*/
+	UPROPERTY(BlueprintReadWrite)
+		FString WriteCharacterDataTextPath = "C:\\Users\\Admin\\Desktop";
+	/*写入文件名*/
+	UPROPERTY(BlueprintReadWrite)
+		FString WriteCharacterDataTextName = "CharacterData.txt";
+	/*读取文件路径*/
+	UPROPERTY(BlueprintReadWrite)
+		FString ReadCharacterDataTextPath = "C:\\Users\\Admin\\Desktop";
+	/*读取文件名*/
+	UPROPERTY(BlueprintReadWrite)
+		FString ReadCharacterDataTextName = "CharacterData.txt";
 };
 

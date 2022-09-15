@@ -45,7 +45,7 @@ APythonAICharacter::APythonAICharacter()
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = false; // Rotate the arm based on the controller
+	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	//if (FollowCamera)
@@ -86,6 +86,7 @@ void APythonAICharacter::SetupPlayerInputComponent(class UInputComponent* Player
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &APythonAICharacter::WantToJump);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &APythonAICharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APythonAICharacter::MoveRight);
@@ -105,11 +106,11 @@ void APythonAICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	Time += DeltaTime;
-	if (Time > DeltaTime)
+	SamplingTime += DeltaTime;
+	if (SamplingTime > DeltaTime)
 	{
 		PictureSampling(FVector2D(800, 600));
-		Time = 0;
+		SamplingTime = 0;
 	}
 	FileTime += DeltaTime;
 	if (FileTime > 10)
@@ -119,11 +120,13 @@ void APythonAICharacter::Tick(float DeltaTime)
 	}
 	if (WriteOrRead)
 	{
-		SetFCharacterData();
+//		SetFCharacterData();
+		SetFPlayerControlledData();
 	}
 	else
 	{
-		ReadFCharacter();
+//		ReadFCharacter();
+		ReadFPlayerControlled();
 	}
 }
 
@@ -265,7 +268,6 @@ void APythonAICharacter::ResetInterface(const FVector& Location, const FString& 
 	if (this)
 	{
 		SetActorLocationAndRotation(DefaultLocation, DefaultRotation);
-		this->ReadWriteSwitch = false;
 	}
 	CallPyCharacterMethod(MethodName, Args);
 }
@@ -294,45 +296,89 @@ void APythonAICharacter::SetFCharacterData()
 		}
 		FCharacterData CharacterData = FCharacterData(CharacterLocation, CharacterRotator, CameraForwardVector);
 		WriteFCharacterData(CharacterData);
-		this->CharacterDataArr.Add(CharacterData);
+//		this->CharacterDataArr.Add(CharacterData);
 	}
 }
 
-void APythonAICharacter::SetPlayerControlledData()
+
+
+void APythonAICharacter::SetFPlayerControlledData()
 {
 	if (InputComponent)
 	{
 		float MoveFB = InputComponent->GetAxisValue("MoveForward");
 		float MoveLR = InputComponent->GetAxisValue("MoveRight");
-		float TurnY = InputComponent->GetAxisValue("Turn");
-		float TurnX = InputComponent->GetAxisValue("LookUp");
-		FPlayerControlledData PlayerControlledData = FPlayerControlledData(MoveFB, MoveLR, TurnY, TurnX);
-		this->PlayerControlledDataArr.Add(PlayerControlledData);
+		float TurnX = InputComponent->GetAxisValue("Turn");
+		float TurnY = InputComponent->GetAxisValue("LookUp");
+		int32 Jump = JumpSwitch;
+		JumpSwitch = false;
+		FPlayerControlledData PlayerControlledData = FPlayerControlledData(MoveFB, MoveLR, TurnX, TurnY,Jump);
+		WriteFPlayerControlledData(PlayerControlledData);
+//		this->PlayerControlledDataArr.Add(PlayerControlledData);
 	}
 }
 
-void APythonAICharacter::ReadPlayerControlledData(const TArray<FPlayerControlledData>& TempPlayerControlledDataArr)
+void APythonAICharacter::WriteFPlayerControlledData(const FPlayerControlledData& P_PlayerControlledData)
 {
-	if (this)
+	WritePlayerControlledBaseData(P_PlayerControlledData);
+}
+
+void APythonAICharacter::WritePlayerControlledBaseData(const FPlayerControlledData& P_PlayerControlledData)
+{
+	FString CharacterFB = FString::SanitizeFloat(P_PlayerControlledData.MoveFB) + FString("\n");
+	FString CharacterLR = FString::SanitizeFloat(P_PlayerControlledData.MoveLR) + FString("\n");
+	FString CharacterLookUp = FString::SanitizeFloat(P_PlayerControlledData.TurnX) + FString("\n");
+	FString CharacterTurn = FString::SanitizeFloat(P_PlayerControlledData.TurnY) + FString("\n");
+	FString CharacterJump = FString::FromInt(P_PlayerControlledData.Jump) + FString("\n");
+	FString TotalCharacterControlledData = CharacterFB + CharacterLR + CharacterLookUp + CharacterTurn + CharacterJump;
+	UTextReadWrite::SaveText(WriteCharacterDataTextPath, FString::FromInt(WriteFileNameNum)+WriteCharacterDataTextName, TotalCharacterControlledData);
+}
+
+void APythonAICharacter::ReadFPlayerControlled()
+{
+	if (0 == ReadPlayerControlledDataArr.Num())
 	{
-		if (TempPlayerControlledDataArr.Num() != 0)
+		LoadFileSuccess = LoadPlayerControlledDataToStack();
+	}
+	else if (LoadFileSuccess)
+	{
+		if (this)
 		{
-			if (this->Count < TempPlayerControlledDataArr.Num())
+
+			
+			float MoveFB = FCString::Atof(*ReadPlayerControlledDataArr[this->PlayerControlledIndex]);
+			float MoveLR = FCString::Atof(*ReadPlayerControlledDataArr[this->PlayerControlledIndex+1]);
+			float TurnX = FCString::Atof(*ReadPlayerControlledDataArr[this->PlayerControlledIndex+2]);
+			float TurnY = FCString::Atof(*ReadPlayerControlledDataArr[this->PlayerControlledIndex + 3]);
+			int32 Jump = FCString::Atoi(*ReadPlayerControlledDataArr[this->PlayerControlledIndex + 4]);
+			MoveForward(MoveFB);
+			MoveRight(MoveLR);
+			APawn::AddControllerYawInput(TurnX);
+			APawn::AddControllerPitchInput(TurnY);
+			if (Jump)
 			{
-				MoveForward(TempPlayerControlledDataArr[Count].MoveFB);
-				MoveRight(TempPlayerControlledDataArr[Count].MoveLR);
-				TurnAtRate(TempPlayerControlledDataArr[Count].TurnX);
-				LookUpAtRate(TempPlayerControlledDataArr[Count].TurnY);
-				this->Count += 1;
+				ACharacter::Jump();
 			}
-			else
+			this->PlayerControlledIndex += 5;
+			if (this->PlayerControlledIndex >= ReadPlayerControlledDataArr.Num())
 			{
-				this->Count = 0;
-				this->ReadWriteSwitch = true;
+				this->PlayerControlledIndex = 0;
+				this->ReadFileNameNum += 1;
+				ReadPlayerControlledDataArr.Empty();
 			}
 		}
 	}
+	if (!LoadFileSuccess)
+	{
+		if (this)
+		{
+			this->ReadFileNameNum = 0;
+		}
+	}
 }
+
+
+
 
 void APythonAICharacter::WriteFCharacterData(const FCharacterData& P_CharacterData)
 {
@@ -349,7 +395,7 @@ void APythonAICharacter::WriteCharacterLoationData(const FCharacterData& P_Chara
 	FString CharacterLocationY = FString::SanitizeFloat(P_CharacterData.CharacterLocation.Y) + FString("\n");
 	FString CharacterLocationZ = FString::SanitizeFloat(P_CharacterData.CharacterLocation.Z) + FString("\n");
 	FString TotalCharacterLocationData = CharacterLocationX + CharacterLocationY + CharacterLocationZ;
-	UTextReadWrite::SaveText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData") + (FString::FromInt(WriteFileNameNum)) + FString(".TXT"), TotalCharacterLocationData);
+	UTextReadWrite::SaveText(WriteCharacterDataTextPath,(FString::FromInt(WriteFileNameNum))+WriteCharacterDataTextName, TotalCharacterLocationData);
 }
 
 void APythonAICharacter::WriteCharacterRotator(const FCharacterData& P_CharacterData)
@@ -358,7 +404,7 @@ void APythonAICharacter::WriteCharacterRotator(const FCharacterData& P_Character
 	FString CharacterForwardY = FString::SanitizeFloat(P_CharacterData.CharacterRotator.Yaw) + FString("\n");
 	FString CharacterForwardZ = FString::SanitizeFloat(P_CharacterData.CharacterRotator.Roll) + FString("\n");
 	FString TotalCharacterRotatorData = CharacterForwardX + CharacterForwardY + CharacterForwardZ;
-	UTextReadWrite::SaveText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData") + (FString::FromInt(WriteFileNameNum)) + FString(".TXT"), TotalCharacterRotatorData);
+	UTextReadWrite::SaveText(WriteCharacterDataTextPath, (FString::FromInt(WriteFileNameNum)) + WriteCharacterDataTextName, TotalCharacterRotatorData);
 }
 
 void APythonAICharacter::WriteCameraForwardData(const FCharacterData& P_CharacterData)
@@ -367,7 +413,7 @@ void APythonAICharacter::WriteCameraForwardData(const FCharacterData& P_Characte
 	FString CameraForwardY = FString::SanitizeFloat(P_CharacterData.CameraForwardVector.Y) + FString("\n");
 	FString CameraForwardZ = FString::SanitizeFloat(P_CharacterData.CameraForwardVector.Z) + FString("\n");
 	FString TotalCameraForwardData = CameraForwardX + CameraForwardY + CameraForwardZ;
-	UTextReadWrite::SaveText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData")+(FString::FromInt(WriteFileNameNum))+FString(".TXT"), TotalCameraForwardData);
+	UTextReadWrite::SaveText(WriteCharacterDataTextPath, (FString::FromInt(WriteFileNameNum))+ WriteCharacterDataTextName, TotalCameraForwardData);
 }
 
 void APythonAICharacter::ReadFCharacter()
@@ -405,6 +451,17 @@ void APythonAICharacter::ReadFCharacter()
 
 bool APythonAICharacter::LoadCharacterDataToStack()
 {
-		bool LoadSuccess = UTextReadWrite::LoadText(FString("C:\\Users\\Admin\\Desktop"), FString("CharacterData") + FString::FromInt(ReadFileNameNum) + FString(".TXT"), ReadCharacterDataArr);
+		bool LoadSuccess = UTextReadWrite::LoadText(ReadCharacterDataTextPath, FString::FromInt(ReadFileNameNum) + ReadCharacterDataTextName, ReadCharacterDataArr);
 		return LoadSuccess;
+}
+
+bool APythonAICharacter::LoadPlayerControlledDataToStack()
+{
+	bool LoadSuccess = UTextReadWrite::LoadText(ReadCharacterDataTextPath, FString::FromInt(ReadFileNameNum) + ReadCharacterDataTextName, ReadPlayerControlledDataArr);
+	return LoadSuccess;
+}
+
+void APythonAICharacter::WantToJump()
+{
+	JumpSwitch = true;
 }
