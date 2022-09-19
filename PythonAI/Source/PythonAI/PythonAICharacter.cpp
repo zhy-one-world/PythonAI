@@ -14,6 +14,7 @@
 #include "IImageWrapper.h"
 #include "Misc/FileHelper.h"
 #include "ImageUtils.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "TextReadWrite.h"
 #include "Math/UnrealMathUtility.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -118,16 +119,20 @@ void APythonAICharacter::Tick(float DeltaTime)
 		WriteFileNameNum += 1;
 		FileTime = 0;
 	}
-	if (WriteOrRead)
+	if (EnableReadWrite)
 	{
-		SetFCharacterData();
-		SetFPlayerControlledData();
+		if (WriteOrRead)
+		{
+			SetFCharacterData();
+			SetFPlayerControlledData();
+		}
+		else
+		{
+			ReadFCharacter();
+			ReadFPlayerControlled();
+		}
 	}
-	else
-	{
-		ReadFCharacter();
-		ReadFPlayerControlled();
-	}
+
 }
 
 void APythonAICharacter::BeginPlay()
@@ -138,6 +143,16 @@ void APythonAICharacter::BeginPlay()
 	{
 		this->DefaultLocation = GetActorLocation();
 		this->DefaultRotation = GetActorRotation();
+	}
+
+	m_WorldPtr = GetWorld();
+	if (m_WorldPtr)
+	{
+		m_PlayerControllerPtr = UGameplayStatics::GetPlayerController(m_WorldPtr, 0);
+		if (m_PlayerControllerPtr)
+		{
+			DefaultControlledRotation = m_PlayerControllerPtr->GetControlRotation();
+		}
 	}
 }
 
@@ -268,6 +283,13 @@ void APythonAICharacter::ResetInterface(const FVector& Location, const FString& 
 	if (this)
 	{
 		SetActorLocationAndRotation(DefaultLocation, DefaultRotation);
+
+		if (m_PlayerControllerPtr)
+		{
+			m_PlayerControllerPtr->SetControlRotation(this->DefaultControlledRotation);
+		}
+
+
 	}
 	CallPyCharacterMethod(MethodName, Args);
 }
@@ -376,6 +398,10 @@ void APythonAICharacter::ReadFPlayerControlled()
 		{
 			this->ReadFileNameNum = 0;
 		}
+		if (m_PlayerControllerPtr)
+		{
+			m_PlayerControllerPtr->SetControlRotation(this->DefaultControlledRotation);
+		}
 	}
 }
 
@@ -447,6 +473,10 @@ void APythonAICharacter::ReadFCharacter()
 		if (this)
 		{
 			this->ReadFileNameNum = 0;
+		}
+		if (m_PlayerControllerPtr)
+		{
+			m_PlayerControllerPtr->SetControlRotation(this->DefaultControlledRotation);
 		}
 	}
 }

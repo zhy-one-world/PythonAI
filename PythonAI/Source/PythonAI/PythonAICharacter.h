@@ -306,5 +306,22 @@ protected:
 	/*读取文件名*/
 	UPROPERTY(BlueprintReadWrite)
 		FString ReadCharacterDataTextName = "CharacterData.txt";
+	/*初始控制器旋转*/
+	UPROPERTY()
+		FRotator DefaultControlledRotation = FRotator(0, 0, 0);
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+		bool EnableReadWrite = true;
+
+private:
+
+	/*控制器指针*/
+	UPROPERTY()
+		APlayerController* m_PlayerControllerPtr = nullptr;
+
+	/*世界指针*/
+	UPROPERTY()
+		UWorld* m_WorldPtr = nullptr;
+		
 };
 
