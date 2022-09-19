@@ -8,6 +8,6 @@ public class PythonAI : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay","ImageWrapper", "UnrealEnginePython" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay","ImageWrapper", "UnrealEnginePython" ,"NavigationSystem"});
 	}
 }

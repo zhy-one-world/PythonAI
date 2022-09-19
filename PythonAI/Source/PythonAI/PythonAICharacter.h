@@ -206,6 +206,14 @@ public:
 	UPROPERTY()
 		bool JumpSwitch = false;
 
+	UFUNCTION(BlueprintCallable)
+		TArray<FVector>& GetPointFromStartToEnd(const FVector& StartLocation, const FVector& EndLocation);
+
+	UPROPERTY(BlueprintReadWrite)
+		TArray<FVector> PathPointsArr;
+	UPROPERTY()
+		TArray<FVector> EmptyFVectorArr;
+
 protected:
 
 	void OnResetVR();
@@ -312,6 +320,7 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		bool EnableReadWrite = true;
+
 
 private:
 

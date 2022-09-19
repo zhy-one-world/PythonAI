@@ -16,6 +16,8 @@
 #include "ImageUtils.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "TextReadWrite.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h"
 #include "Math/UnrealMathUtility.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
@@ -215,6 +217,7 @@ TArray<FColor> APythonAICharacter::GetColorDateArr(const TArray<FColor>& ColorAr
 {
 	return ColorArr;
 }
+
 
 void APythonAICharacter::OnResetVR()
 {
@@ -496,4 +499,19 @@ bool APythonAICharacter::LoadPlayerControlledDataToStack()
 void APythonAICharacter::WantToJump()
 {
 	JumpSwitch = true;
+}
+
+TArray<FVector>& APythonAICharacter::GetPointFromStartToEnd(const FVector& StartLocation, const FVector& EndLocation)
+{
+	if (m_WorldPtr)
+	{
+		UNavigationPath* PathPtr = UNavigationSystemV1::FindPathToLocationSynchronously(m_WorldPtr, StartLocation, EndLocation);
+		if (PathPtr)
+		{
+			PathPointsArr = PathPtr->PathPoints;
+			return PathPointsArr;
+		}
+		return EmptyFVectorArr;
+	}
+	return EmptyFVectorArr;
 }
